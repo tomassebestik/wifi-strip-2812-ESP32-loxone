@@ -1,6 +1,6 @@
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
-#include <FastLED.h>
+#include "FastLED.h"
 #include "env_config.h"
 
 #define PIN 13        // GPIO pin of ESP32 for LED strip signal wire (DI)
@@ -14,7 +14,7 @@ AsyncWebServer server(80);         // Create AsyncWebServer object on port 80
 const char *COLOR_INPUT = "color"; // GET request param query keyword
 
 // PRESET: Enable pixels symmetrically from center to edges of the strip
-void colorEnableFromCenter(int red, int green, int blue)
+void colorEnableFromCenter(uint8_t red, uint8_t green, uint8_t blue)
 {
   for (int i = NUMPIXELS / 2; i >= 0; i--)
   {
@@ -26,7 +26,7 @@ void colorEnableFromCenter(int red, int green, int blue)
 }
 
 // PRESET: Disable pixels symmetrically from the edges to the center of the strip
-void colorDisableToCenter(int red, int green, int blue)
+void colorDisableToCenter(uint8_t red, uint8_t green, uint8_t blue)
 {
   for (int i = 0; i < (NUMPIXELS / 2) + 1; i++)
   {
@@ -38,7 +38,7 @@ void colorDisableToCenter(int red, int green, int blue)
 }
 
 // PRESET: Enable pixels from one end of the strip to the other
-void colorEnableFromEdge(int red, int green, int blue)
+void colorEnableFromEdge(uint8_t red, uint8_t green, uint8_t blue)
 {
   for (int i = NUMPIXELS; i >= 0; i = i - 3)
   // In groups of 3 pixels
@@ -52,7 +52,7 @@ void colorEnableFromEdge(int red, int green, int blue)
 }
 
 // PRESET: Disable pixels from one end of the strip to the other (backwards than `colorEnableFromEdge`)
-void colorDisableToEdge(int red, int green, int blue)
+void colorDisableToEdge(uint8_t red, uint8_t green, uint8_t blue)
 {
   for (int i = 0; i < NUMPIXELS; i = i + 3)
   // In groups of 3 pixels
@@ -67,7 +67,9 @@ void colorDisableToEdge(int red, int green, int blue)
 
 void setup()
 {
-  FastLED.addLeds<WS2812B, PIN, GRB>(leds, NUMPIXELS); // Init LED ring
+  FastLED.addLeds<WS2812B, PIN, GRB>(leds, NUMPIXELS); // Init LED strip
+  FastLED.clear();                                     // Turn off all LEDs on boot
+  FastLED.show();
 
   Serial.begin(115200); // Start serial monitor
 
@@ -91,6 +93,7 @@ void setup()
     inputMessage = request->getParam(COLOR_INPUT)->value();
 
     int color = inputMessage.toInt();
+    
     sprintf(serprt_buffer, "Color received from Loxone: %d", color);
     Serial.println(serprt_buffer);
 
@@ -103,15 +106,15 @@ void setup()
     else
     {
       // Extract RED (0-100%)
-      int red = color % 1000;
+      uint8_t red = color % 1000;
       color = (color - red) / 1000;
 
       // Extract GREEN (0-100%)
-      int green = color % 1000;
+      uint8_t green = color % 1000;
       color = (color - green) / 1000;
 
       // Extract BLUE (0-100%)
-      int blue = color;
+      uint8_t blue = color;
 
       // Map percent values (0-100%) to RGB 8-bit values (0-255)
       red *= 2.55;
