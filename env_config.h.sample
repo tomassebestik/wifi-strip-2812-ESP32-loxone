@@ -1,0 +1,4 @@
+// Rename this file to "env_config.h" and fill in the credentials.
+
+#define ENV_WIFI_SSID "yourWifiSSID"
+#define ENV_WIFI_PASS "yourWifiPassword"
